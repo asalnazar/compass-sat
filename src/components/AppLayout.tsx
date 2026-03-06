@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Home, Calculator, BookOpen, LineChart, BarChart3, Crown } from "lucide-react";
+import { Home, Calculator, BookOpen, LineChart, BarChart3, Crown, ClipboardList } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import {
@@ -11,6 +11,7 @@ const navItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "SAT Math", url: "/math", icon: Calculator },
   { title: "SAT English", url: "/english", icon: BookOpen },
+  { title: "Full Tests", url: "/full-tests", icon: ClipboardList },
   { title: "Desmos Tips", url: "/desmos", icon: LineChart },
   { title: "Progress", url: "/progress", icon: BarChart3 },
   { title: "Premium", url: "/premium", icon: Crown },

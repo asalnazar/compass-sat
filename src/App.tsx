@@ -11,6 +11,7 @@ import EnglishPage from "./pages/EnglishPage";
 import DesmosPage from "./pages/DesmosPage";
 import ProgressPage from "./pages/ProgressPage";
 import PremiumPage from "./pages/PremiumPage";
+import FullTestPage from "./pages/FullTestPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/desmos" element={<DesmosPage />} />
               <Route path="/progress" element={<ProgressPage />} />
               <Route path="/premium" element={<PremiumPage />} />
+              <Route path="/full-tests" element={<FullTestPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>
