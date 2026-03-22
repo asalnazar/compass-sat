@@ -189,7 +189,7 @@ export default function FullTestPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium">{test.title}</h3>
-                <p className="text-xs text-muted-foreground">4 modules • 88 questions • ~134 min</p>
+                <p className="text-xs text-muted-foreground">4 modules • 98 questions • ~134 min</p>
               </div>
               {i === 0 ? (
                 <Badge className="text-xs">Free Preview</Badge>
