@@ -133,7 +133,7 @@ export default function FullTestPage() {
           <button onClick={() => setActiveTest(null)} className="text-sm text-muted-foreground hover:text-foreground">← Back</button>
           <h1 className="text-2xl font-serif font-bold">{activeTest.title}</h1>
         </div>
-        <p className="text-sm text-muted-foreground">4 modules • 88 questions total • ~134 minutes</p>
+        <p className="text-sm text-muted-foreground">4 modules • 98 questions total • ~134 minutes</p>
         <div className="grid gap-3">
           {activeTest.modules.map((mod, i) => {
             const score = moduleScores[mod.id];
@@ -189,7 +189,7 @@ export default function FullTestPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium">{test.title}</h3>
-                <p className="text-xs text-muted-foreground">4 modules • 88 questions • ~134 min</p>
+                <p className="text-xs text-muted-foreground">4 modules • 98 questions • ~134 min</p>
               </div>
               {i === 0 ? (
                 <Badge className="text-xs">Free Preview</Badge>
