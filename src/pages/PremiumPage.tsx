@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, FileText, Brain, GraduationCap, Sparkles, Crown, Clock, BookOpen } from "lucide-react";
+import { Lock, FileText, Sparkles, Crown, Clock, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
