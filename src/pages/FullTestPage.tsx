@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy, ArrowLeft } from "lucide-react";
+import QuestionText from "@/components/QuestionText";
 
 export default function FullTestPage() {
   const [activeTest, setActiveTest] = useState<FullTest | null>(null);
