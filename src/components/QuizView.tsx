@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, ArrowRight, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import QuestionText from "@/components/QuestionText";
 
 interface Props {
   unitId: string;
@@ -79,7 +80,7 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
       <AnimatePresence mode="wait">
         <motion.div key={q.id} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.2 }}>
           <Card className="p-5 space-y-4">
-            <p className="font-medium">{q.text}</p>
+            <QuestionText text={q.text} />
             <div className="space-y-2">
               {q.options.map((opt, i) => {
                 let cls = "border rounded-lg p-3 cursor-pointer transition-all text-sm flex items-center gap-3 ";

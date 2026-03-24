@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy, ArrowLeft } from "lucide-react";
+import QuestionText from "@/components/QuestionText";
 
 export default function FullTestPage() {
   const [activeTest, setActiveTest] = useState<FullTest | null>(null);
@@ -87,7 +88,7 @@ export default function FullTestPage() {
         <AnimatePresence mode="wait">
           <motion.div key={q.id} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.2 }}>
             <Card className="p-5 space-y-4">
-              <p className="font-medium text-sm leading-relaxed">{q.text}</p>
+              <QuestionText text={q.text} />
               <div className="space-y-2">
                 {q.options.map((opt, i) => {
                   let cls = "border rounded-lg p-3 cursor-pointer transition-all text-sm flex items-center gap-3 ";
