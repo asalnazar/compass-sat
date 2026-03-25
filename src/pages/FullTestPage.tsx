@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { practiceTests, FullTest, TestModule } from "@/data/practiceTests";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy, ArrowLeft } from "lucide-react";
+import { Lock, Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy } from "lucide-react";
 import QuestionText from "@/components/QuestionText";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { STRIPE_CONFIG } from "@/lib/stripe";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function FullTestPage() {
   const [activeTest, setActiveTest] = useState<FullTest | null>(null);
@@ -17,6 +22,46 @@ export default function FullTestPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [moduleScores, setModuleScores] = useState<Record<string, number>>({});
+  const [buyingTest, setBuyingTest] = useState<string | null>(null);
+
+  const { user, purchasedTests, loadPurchasedTests } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Handle purchase redirect
+  useEffect(() => {
+    const purchased = searchParams.get("purchased");
+    if (purchased && user) {
+      supabase.from("purchased_tests").upsert({
+        user_id: user.id,
+        test_id: purchased,
+      }, { onConflict: "user_id,test_id" }).then(() => {
+        loadPurchasedTests();
+        toast({ title: "Test unlocked! 🎉", description: "You can now take this practice test." });
+      });
+    }
+  }, [searchParams, user]);
+
+  const canAccessTest = (testIndex: number, testId: string) => {
+    if (testIndex === 0) return true; // Free preview
+    return purchasedTests.includes(testId);
+  };
+
+  const handleBuyTest = async (testId: string) => {
+    if (!user) { navigate("/auth"); return; }
+    setBuyingTest(testId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: { priceId: STRIPE_CONFIG.practiceTest.priceId, testId },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    }
+    setBuyingTest(null);
+  };
 
   const handleStartModule = (mod: TestModule) => {
     setActiveModule(mod);
@@ -45,10 +90,7 @@ export default function FullTestPage() {
     }
   };
 
-  const handleBackToTest = () => {
-    setActiveModule(null);
-    setFinished(false);
-  };
+  const handleBackToTest = () => { setActiveModule(null); setFinished(false); };
 
   // Module quiz view
   if (activeModule) {
@@ -64,7 +106,7 @@ export default function FullTestPage() {
             <Trophy className="h-12 w-12 mx-auto text-warning" />
             <h2 className="text-2xl font-serif font-bold">{correctCount}/{activeModule.questions.length}</h2>
             <p className="text-sm text-muted-foreground">{activeModule.title}</p>
-            <p className="text-muted-foreground">{pct >= 80 ? "Excellent! 🎉" : pct >= 60 ? "Good work! Keep practicing." : "Review this section."}</p>
+            <p className="text-muted-foreground">{pct >= 80 ? "Excellent! 🎉" : pct >= 60 ? "Good work!" : "Review this section."}</p>
             <Progress value={pct} className="h-3" />
           </Card>
           <Button onClick={handleBackToTest} variant="outline" className="w-full">Back to Test Overview</Button>
@@ -126,7 +168,7 @@ export default function FullTestPage() {
     );
   }
 
-  // Test overview (modules list)
+  // Test overview
   if (activeTest) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
@@ -179,30 +221,39 @@ export default function FullTestPage() {
         <p className="text-sm text-muted-foreground">5 complete SAT simulations • $15.99 each</p>
       </div>
       <div className="grid gap-3">
-        {practiceTests.map((test, i) => (
-          <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card
-              className={`p-5 flex items-center gap-4 ${i === 0 ? "cursor-pointer hover:shadow-md" : "opacity-60"} transition-shadow`}
-              onClick={() => i === 0 && setActiveTest(test)}
-            >
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="text-lg font-serif font-bold text-primary">{i + 1}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium">{test.title}</h3>
-                <p className="text-xs text-muted-foreground">4 modules • 98 questions • ~134 min</p>
-              </div>
-              {i === 0 ? (
-                <Badge className="text-xs">Free Preview</Badge>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <Badge variant="outline" className="text-xs">$15.99</Badge>
+        {practiceTests.map((test, i) => {
+          const accessible = canAccessTest(i, test.id);
+          return (
+            <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <Card
+                className={`p-5 flex items-center gap-4 ${accessible ? "cursor-pointer hover:shadow-md" : ""} transition-shadow`}
+                onClick={() => accessible && setActiveTest(test)}
+              >
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-lg font-serif font-bold text-primary">{i + 1}</span>
                 </div>
-              )}
-            </Card>
-          </motion.div>
-        ))}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium">{test.title}</h3>
+                  <p className="text-xs text-muted-foreground">4 modules • 98 questions • ~134 min</p>
+                </div>
+                {i === 0 ? (
+                  <Badge className="text-xs">Free Preview</Badge>
+                ) : accessible ? (
+                  <Badge className="text-xs bg-success text-success-foreground">Unlocked</Badge>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleBuyTest(test.id); }}
+                    disabled={buyingTest === test.id}
+                  >
+                    {buyingTest === test.id ? "..." : "$15.99"}
+                  </Button>
+                )}
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

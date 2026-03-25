@@ -1,7 +1,9 @@
 import { ReactNode } from "react";
-import { Home, Calculator, BookOpen, BarChart3, Crown, ClipboardList } from "lucide-react";
+import { Home, Calculator, BookOpen, BarChart3, Crown, ClipboardList, LogIn, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
@@ -20,6 +22,7 @@ function AppSidebarContent() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -48,6 +51,21 @@ function AppSidebarContent() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  {user ? (
+                    <button onClick={signOut} className="flex items-center w-full hover:bg-muted/50 px-2 py-1.5 rounded-md text-sm">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Sign Out</span>}
+                    </button>
+                  ) : (
+                    <NavLink to="/auth" className="hover:bg-muted/50" activeClassName="bg-primary/10 text-primary font-medium">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Sign In</span>}
+                    </NavLink>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

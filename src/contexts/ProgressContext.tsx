@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface TopicScore {
   unitId: string;
@@ -20,23 +22,37 @@ interface ProgressState {
 
 const ProgressContext = createContext<ProgressState | undefined>(undefined);
 
-const STORAGE_KEY = "nextstep-progress";
-
 export function ProgressProvider({ children }: { children: ReactNode }) {
-  const [scores, setScores] = useState<TopicScore[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  const [scores, setScores] = useState<TopicScore[]>([]);
+  const { user } = useAuth();
 
+  // Load from DB when user logs in
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
-  }, [scores]);
+    if (!user) {
+      setScores([]);
+      return;
+    }
+    const load = async () => {
+      const { data } = await supabase
+        .from("user_progress")
+        .select("*")
+        .eq("user_id", user.id);
+      if (data) {
+        setScores(data.map((d) => ({
+          unitId: d.unit_id,
+          section: d.section as "math" | "english",
+          questionsAnswered: d.questions_answered,
+          correctAnswers: d.correct_answers,
+          completed: d.completed,
+        })));
+      }
+    };
+    load();
+  }, [user]);
 
   const getScore = (unitId: string) => scores.find((s) => s.unitId === unitId);
 
-  const saveScore = (score: TopicScore) => {
+  const saveScore = useCallback(async (score: TopicScore) => {
     setScores((prev) => {
       const idx = prev.findIndex((s) => s.unitId === score.unitId);
       if (idx >= 0) {
@@ -46,7 +62,18 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, score];
     });
-  };
+
+    if (user) {
+      await supabase.from("user_progress").upsert({
+        user_id: user.id,
+        unit_id: score.unitId,
+        section: score.section,
+        questions_answered: score.questionsAnswered,
+        correct_answers: score.correctAnswers,
+        completed: score.completed,
+      }, { onConflict: "user_id,unit_id" });
+    }
+  }, [user]);
 
   const totalCompleted = scores.filter((s) => s.completed).length;
   const totalQuestions = scores.reduce((sum, s) => sum + s.questionsAnswered, 0);
