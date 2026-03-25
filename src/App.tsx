@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import AppLayout from "@/components/AppLayout";
 import Index from "./pages/Index";
@@ -11,6 +12,7 @@ import EnglishPage from "./pages/EnglishPage";
 import ProgressPage from "./pages/ProgressPage";
 import PremiumPage from "./pages/PremiumPage";
 import FullTestPage from "./pages/FullTestPage";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,21 +22,24 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <ProgressProvider>
-        <BrowserRouter>
-          <AppLayout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/math" element={<MathPage />} />
-              <Route path="/english" element={<EnglishPage />} />
-              <Route path="/progress" element={<ProgressPage />} />
-              <Route path="/premium" element={<PremiumPage />} />
-              <Route path="/full-tests" element={<FullTestPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
-        </BrowserRouter>
-      </ProgressProvider>
+      <AuthProvider>
+        <ProgressProvider>
+          <BrowserRouter>
+            <AppLayout>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/math" element={<MathPage />} />
+                <Route path="/english" element={<EnglishPage />} />
+                <Route path="/progress" element={<ProgressPage />} />
+                <Route path="/premium" element={<PremiumPage />} />
+                <Route path="/full-tests" element={<FullTestPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AppLayout>
+          </BrowserRouter>
+        </ProgressProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
