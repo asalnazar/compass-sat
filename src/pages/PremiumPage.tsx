@@ -31,7 +31,7 @@ export default function PremiumPage() {
         body: { priceId: STRIPE_CONFIG.weeklyPremium.priceId },
       });
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) window.location.href = data.url;
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
@@ -42,7 +42,7 @@ export default function PremiumPage() {
     try {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) window.location.href = data.url;
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
