@@ -29,6 +29,24 @@ export default function FullTestPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const redirectToCheckout = (url: string) => {
+    const isEmbeddedPreview = window.top !== window.self;
+
+    if (isEmbeddedPreview) {
+      const checkoutTab = window.open(url, "_blank", "noopener,noreferrer");
+      if (checkoutTab) return;
+
+      try {
+        window.top?.location.assign(url);
+        return;
+      } catch {
+        // Fall through to same-frame navigation when top-level redirect is blocked.
+      }
+    }
+
+    window.location.assign(url);
+  };
+
   // Handle purchase redirect
   useEffect(() => {
     const purchased = searchParams.get("purchased");
@@ -56,7 +74,7 @@ export default function FullTestPage() {
         body: { priceId: STRIPE_CONFIG.practiceTest.priceId, testId },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.url) redirectToCheckout(data.url);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
