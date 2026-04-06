@@ -1,11 +1,11 @@
 // Stripe product and price IDs
 export const STRIPE_CONFIG = {
   weeklyPremium: {
-    productId: "prod_UGk6TJm5XA3wNR",
-    priceId: "price_1TICbpKdf6BTt8pVSA95x7mQ",
+    productId: "prod_UEDyoBOo4KrxKD",
+    priceId: "price_1TFlWRKdf6BTt8pViPEHTrGc",
   },
   practiceTest: {
-    productId: "prod_UGk7cR0Hz9GzRm",
-    priceId: "price_1TICd7Kdf6BTt8pVr3LkkOPx",
+    productId: "prod_UEDyVYeqp4HPQl",
+    priceId: "price_1TFlWRKdf6BTt8pVvksEQONr",
   },
 } as const;
