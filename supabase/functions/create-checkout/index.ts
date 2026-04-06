@@ -38,15 +38,19 @@ serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
-    if (customers.data.length > 0) customerId = customers.data[0].id;
-    logStep("Stripe customer lookup", { customerId: customerId || "new customer" });
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    } else {
+      const newCustomer = await stripe.customers.create({ email: user.email });
+      customerId = newCustomer.id;
+    }
+    logStep("Stripe customer", { customerId });
 
     const { priceId } = await req.json();
     logStep("Price ID received", { priceId });
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
