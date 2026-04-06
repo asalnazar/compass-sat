@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import AppLayout from "@/components/AppLayout";
+import RequireAuth from "@/components/RequireAuth";
 import Index from "./pages/Index";
 import MathPage from "./pages/MathPage";
 import EnglishPage from "./pages/EnglishPage";
@@ -27,13 +28,13 @@ const App = () => (
           <BrowserRouter>
             <AppLayout>
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/math" element={<MathPage />} />
-                <Route path="/english" element={<EnglishPage />} />
-                <Route path="/progress" element={<ProgressPage />} />
-                <Route path="/premium" element={<PremiumPage />} />
-                <Route path="/full-tests" element={<FullTestPage />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+                <Route path="/math" element={<RequireAuth><MathPage /></RequireAuth>} />
+                <Route path="/english" element={<RequireAuth><EnglishPage /></RequireAuth>} />
+                <Route path="/progress" element={<RequireAuth><ProgressPage /></RequireAuth>} />
+                <Route path="/premium" element={<RequireAuth><PremiumPage /></RequireAuth>} />
+                <Route path="/full-tests" element={<RequireAuth><FullTestPage /></RequireAuth>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppLayout>
