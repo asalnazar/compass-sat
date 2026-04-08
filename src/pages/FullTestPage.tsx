@@ -47,16 +47,19 @@ export default function FullTestPage() {
     window.location.assign(url);
   };
 
-  // Handle purchase redirect
+  // Handle purchase redirect - verify payment server-side
   useEffect(() => {
     const purchased = searchParams.get("purchased");
     if (purchased && user) {
-      supabase.from("purchased_tests").upsert({
-        user_id: user.id,
-        test_id: purchased,
-      }, { onConflict: "user_id,test_id" }).then(() => {
-        loadPurchasedTests();
-        toast({ title: "Test unlocked! 🎉", description: "You can now take this practice test." });
+      supabase.functions.invoke("confirm-purchase", {
+        body: { testId: purchased },
+      }).then(({ error }) => {
+        if (error) {
+          toast({ title: "Error confirming purchase", description: "Please contact support if this persists.", variant: "destructive" });
+        } else {
+          loadPurchasedTests();
+          toast({ title: "Test unlocked! 🎉", description: "You can now take this practice test." });
+        }
       });
     }
   }, [searchParams, user]);
