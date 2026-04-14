@@ -5,13 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy } from "lucide-react";
+import { Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy } from "lucide-react";
 import QuestionText from "@/components/QuestionText";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { STRIPE_CONFIG } from "@/lib/stripe";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function FullTestPage() {
   const [activeTest, setActiveTest] = useState<FullTest | null>(null);
@@ -22,67 +18,6 @@ export default function FullTestPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [moduleScores, setModuleScores] = useState<Record<string, number>>({});
-  const [buyingTest, setBuyingTest] = useState<string | null>(null);
-
-  const { user, purchasedTests, loadPurchasedTests } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const redirectToCheckout = (url: string) => {
-    const isEmbeddedPreview = window.top !== window.self;
-
-    if (isEmbeddedPreview) {
-      const checkoutTab = window.open(url, "_blank", "noopener,noreferrer");
-      if (checkoutTab) return;
-
-      try {
-        window.top?.location.assign(url);
-        return;
-      } catch {
-        // Fall through to same-frame navigation when top-level redirect is blocked.
-      }
-    }
-
-    window.location.assign(url);
-  };
-
-  // Handle purchase redirect - verify payment server-side
-  useEffect(() => {
-    const purchased = searchParams.get("purchased");
-    if (purchased && user) {
-      supabase.functions.invoke("confirm-purchase", {
-        body: { testId: purchased },
-      }).then(({ error }) => {
-        if (error) {
-          toast({ title: "Error confirming purchase", description: "Please contact support if this persists.", variant: "destructive" });
-        } else {
-          loadPurchasedTests();
-          toast({ title: "Test unlocked! 🎉", description: "You can now take this practice test." });
-        }
-      });
-    }
-  }, [searchParams, user]);
-
-  const canAccessTest = (testIndex: number, testId: string) => {
-    if (testIndex === 0) return true; // Free preview
-    return purchasedTests.includes(testId);
-  };
-
-  const handleBuyTest = async (testId: string) => {
-    if (!user) { navigate("/auth"); return; }
-    setBuyingTest(testId);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { priceId: STRIPE_CONFIG.practiceTest.priceId, testId },
-      });
-      if (error) throw error;
-      if (data?.url) redirectToCheckout(data.url);
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
-    }
-    setBuyingTest(null);
-  };
 
   const handleStartModule = (mod: TestModule) => {
     setActiveModule(mod);
@@ -234,47 +169,31 @@ export default function FullTestPage() {
     );
   }
 
-  // Test list
+  // Test list - all free
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-serif font-bold">Full Practice Tests</h1>
-        <p className="text-sm text-muted-foreground">5 complete SAT simulations • $15.99 each</p>
+        <p className="text-sm text-muted-foreground">5 complete SAT simulations • All free</p>
       </div>
       <div className="grid gap-3">
-        {practiceTests.map((test, i) => {
-          const accessible = canAccessTest(i, test.id);
-          return (
-            <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <Card
-                className={`p-5 flex items-center gap-4 ${accessible ? "cursor-pointer hover:shadow-md" : ""} transition-shadow`}
-                onClick={() => accessible && setActiveTest(test)}
-              >
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-lg font-serif font-bold text-primary">{i + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium">{test.title}</h3>
-                  <p className="text-xs text-muted-foreground">4 modules • 98 questions • ~134 min</p>
-                </div>
-                {i === 0 ? (
-                  <Badge className="text-xs">Free Preview</Badge>
-                ) : accessible ? (
-                  <Badge className="text-xs bg-success text-success-foreground">Unlocked</Badge>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); handleBuyTest(test.id); }}
-                    disabled={buyingTest === test.id}
-                  >
-                    {buyingTest === test.id ? "..." : "$15.99"}
-                  </Button>
-                )}
-              </Card>
-            </motion.div>
-          );
-        })}
+        {practiceTests.map((test, i) => (
+          <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <Card
+              className="p-5 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => setActiveTest(test)}
+            >
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="text-lg font-serif font-bold text-primary">{i + 1}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium">{test.title}</h3>
+                <p className="text-xs text-muted-foreground">4 modules • 98 questions • ~134 min</p>
+              </div>
+              <Badge className="text-xs bg-success text-success-foreground">Free</Badge>
+            </Card>
+          </motion.div>
+        ))}
       </div>
     </div>
   );

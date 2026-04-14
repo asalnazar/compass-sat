@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Home, Calculator, BookOpen, BarChart3, Crown, ClipboardList, LogIn, LogOut } from "lucide-react";
+import { Home, Calculator, BookOpen, BarChart3, ClipboardList, LogIn, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +15,6 @@ const navItems = [
   { title: "SAT English", url: "/english", icon: BookOpen },
   { title: "Full Tests", url: "/full-tests", icon: ClipboardList },
   { title: "Progress", url: "/progress", icon: BarChart3 },
-  { title: "Premium", url: "/premium", icon: Crown },
 ];
 
 function AppSidebarContent() {
@@ -80,9 +79,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebarContent />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 flex items-center border-b px-4 bg-card sticky top-0 z-10">
+          <header className="h-14 flex items-center border-b px-4 bg-card sticky top-0 z-10">
             <SidebarTrigger className="mr-3" />
-            <span className="font-serif font-bold text-primary text-sm">NextStep SAT Prep</span>
+            <span className="font-serif font-bold text-primary text-lg">NextStep SAT Prep</span>
           </header>
           <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
         </div>
