@@ -1,91 +1,95 @@
 import { ReactNode } from "react";
-import { Home, Calculator, BookOpen, BarChart3, ClipboardList, LogIn, LogOut } from "lucide-react";
-import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
-} from "@/components/ui/sidebar";
+import { useProgress } from "@/contexts/ProgressContext";
+import { TrendingUp, LogOut, LogIn } from "lucide-react";
 
-const navItems = [
-  { title: "Home", url: "/", icon: Home },
-  { title: "SAT Math", url: "/math", icon: Calculator },
-  { title: "SAT English", url: "/english", icon: BookOpen },
-  { title: "Full Tests", url: "/full-tests", icon: ClipboardList },
-  { title: "Progress", url: "/progress", icon: BarChart3 },
+const tabs = [
+  { to: "/", label: "Home", end: true },
+  { to: "/math", label: "Math" },
+  { to: "/english", label: "English" },
+  { to: "/full-tests", label: "Tests" },
+  { to: "/progress", label: "Progress" },
+  { to: "/premium", label: "Upgrade" },
 ];
 
-function AppSidebarContent() {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
-  const location = useLocation();
-  const { user, signOut } = useAuth();
-
+function ScoreBadge() {
+  const { user } = useAuth();
+  const { predictedScore, scores } = useProgress();
+  if (!user) return null;
+  const completed = scores.filter((s) => s.completed).length;
+  const trend = completed > 0 ? Math.min(60 + completed * 5, 180) : 0;
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
-      <SidebarContent className="pt-4">
-        {!collapsed && (
-          <div className="px-4 pb-4">
-            <h2 className="text-lg font-serif font-bold text-foreground">NextStep</h2>
-            <p className="text-xs text-muted-foreground">SAT Prep</p>
-          </div>
-        )}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/"}
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-primary/10 text-primary font-medium"
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  {user ? (
-                    <button onClick={signOut} className="flex items-center w-full hover:bg-muted/50 px-2 py-1.5 rounded-md text-sm">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>Sign Out</span>}
-                    </button>
-                  ) : (
-                    <NavLink to="/auth" className="hover:bg-muted/50" activeClassName="bg-primary/10 text-primary font-medium">
-                      <LogIn className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>Sign In</span>}
-                    </NavLink>
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+    <div className="flex items-center gap-2 rounded-full bg-card border border-border pl-3 pr-2 py-1.5 shadow-sm">
+      <div className="flex flex-col leading-none">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Predicted SAT</span>
+        <span className="font-serif text-base text-foreground">{predictedScore}</span>
+      </div>
+      <span className="flex items-center gap-0.5 rounded-full bg-success/10 text-success px-2 py-0.5 text-xs font-semibold">
+        <TrendingUp className="h-3 w-3" />+{trend}
+      </span>
+    </div>
   );
 }
 
 export default function AppLayout({ children }: { children: ReactNode }) {
+  const { user, signOut } = useAuth();
+  const location = useLocation();
+  const hideChrome = location.pathname === "/auth" || location.pathname === "/reset-password";
+
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebarContent />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b px-4 bg-card sticky top-0 z-10">
-            <SidebarTrigger className="mr-3" />
-            <span className="font-serif font-bold text-primary text-lg">NextStep SAT Prep</span>
-          </header>
-          <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <div className="min-h-screen bg-background flex flex-col">
+      {!hideChrome && (
+        <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border">
+          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+            <Link to="/" className="font-serif text-2xl tracking-tight">
+              Next<span className="text-primary">Step</span>
+            </Link>
+            <div className="flex items-center gap-3">
+              <ScoreBadge />
+              {user ? (
+                <button onClick={signOut} className="p-2 rounded-full hover:bg-muted text-muted-foreground" aria-label="Sign out">
+                  <LogOut className="h-4 w-4" />
+                </button>
+              ) : (
+                <Link to="/auth" className="p-2 rounded-full hover:bg-muted text-muted-foreground" aria-label="Sign in">
+                  <LogIn className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
+          </div>
+          {user && (
+            <nav className="border-t border-border bg-card/40">
+              <div className="max-w-5xl mx-auto px-2 flex items-center gap-1 overflow-x-auto">
+                {tabs.map((t) => (
+                  <NavLink
+                    key={t.to}
+                    to={t.to}
+                    end={t.end}
+                    className={({ isActive }) =>
+                      `relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                        isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {t.label}
+                        {isActive && (
+                          <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-primary rounded-full" />
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </nav>
+          )}
+        </header>
+      )}
+      <main className="flex-1 w-full">
+        <div className="max-w-5xl mx-auto px-4 py-6 md:py-10">{children}</div>
+      </main>
+    </div>
   );
 }
