@@ -14,25 +14,61 @@ export type Database = {
   }
   public: {
     Tables: {
+      practice_sessions: {
+        Row: {
+          correct_answers: number
+          created_at: string
+          id: string
+          questions_answered: number
+          session_date: string
+          user_id: string
+        }
+        Insert: {
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          questions_answered?: number
+          session_date?: string
+          user_id: string
+        }
+        Update: {
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          questions_answered?: number
+          session_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
+          current_streak: number
           display_name: string | null
           id: string
+          last_active_date: string | null
+          longest_streak: number
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          current_streak?: number
           display_name?: string | null
           id?: string
+          last_active_date?: string | null
+          longest_streak?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          current_streak?: number
           display_name?: string | null
           id?: string
+          last_active_date?: string | null
+          longest_streak?: number
           updated_at?: string
           user_id?: string
         }
