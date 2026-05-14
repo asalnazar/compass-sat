@@ -15,6 +15,7 @@ import FullTestPage from "./pages/FullTestPage";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
+import PremiumPage from "./pages/PremiumPage";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/english" element={<RequireAuth><EnglishPage /></RequireAuth>} />
                 <Route path="/progress" element={<RequireAuth><ProgressPage /></RequireAuth>} />
                 <Route path="/full-tests" element={<RequireAuth><FullTestPage /></RequireAuth>} />
+                <Route path="/premium" element={<RequireAuth><PremiumPage /></RequireAuth>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppLayout>
