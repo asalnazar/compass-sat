@@ -8,8 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy } from "lucide-react";
 import QuestionText from "@/components/QuestionText";
 import { useAuth } from "@/contexts/AuthContext";
+import PaywallBanner from "@/components/PaywallBanner";
 
 export default function FullTestPage() {
+  const { subscription } = useAuth();
+  const isPro = subscription.subscribed;
   const [activeTest, setActiveTest] = useState<FullTest | null>(null);
   const [activeModule, setActiveModule] = useState<TestModule | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -169,31 +172,42 @@ export default function FullTestPage() {
     );
   }
 
-  // Test list - all free
+  // Test list
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-serif font-bold">Full Practice Tests</h1>
-        <p className="text-sm text-muted-foreground">5 complete SAT simulations • All free</p>
+        <h1 className="font-serif text-3xl">Full Practice Tests</h1>
+        <p className="text-sm text-muted-foreground mt-1">5 complete SAT simulations · ~134 min each</p>
       </div>
+      {!isPro && <PaywallBanner title="Full practice tests are part of Pro · $29/mo" />}
       <div className="grid gap-3">
-        {practiceTests.map((test, i) => (
-          <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card
-              className="p-5 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setActiveTest(test)}
-            >
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="text-lg font-serif font-bold text-primary">{i + 1}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium">{test.title}</h3>
-                <p className="text-xs text-muted-foreground">4 modules • 98 questions • ~134 min</p>
-              </div>
-              <Badge className="text-xs bg-success text-success-foreground">Free</Badge>
-            </Card>
-          </motion.div>
-        ))}
+        {practiceTests.map((test, i) => {
+          const locked = !isPro;
+          return (
+            <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <button
+                disabled={locked}
+                onClick={() => !locked && setActiveTest(test)}
+                className={`w-full text-left bg-card border border-border rounded-2xl p-5 flex items-center gap-4 transition-all ${
+                  locked ? "opacity-70 cursor-not-allowed" : "hover:border-primary/40 hover:shadow-sm cursor-pointer"
+                }`}
+              >
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="font-serif text-lg text-primary">{i + 1}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium">{test.title}</h3>
+                  <p className="text-xs text-muted-foreground">4 modules · 98 questions · ~134 min</p>
+                </div>
+                {locked ? (
+                  <Badge variant="outline" className="text-xs">Locked</Badge>
+                ) : (
+                  <Badge className="text-xs bg-success text-success-foreground">Open</Badge>
+                )}
+              </button>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
