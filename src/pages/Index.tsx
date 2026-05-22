@@ -31,6 +31,11 @@ export default function Index() {
             <s.icon className={`h-5 w-5 mx-auto ${s.tint}`} />
             <p className="font-serif text-2xl mt-2 leading-none">{s.value}</p>
             <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider">{s.label}</p>
+            {s.label === "Accuracy" && (
+              <p className="text-[10px] text-muted-foreground/80 mt-1.5 italic normal-case tracking-normal">
+                Just getting started — scores improve fast.
+              </p>
+            )}
           </div>
         ))}
       </motion.div>
