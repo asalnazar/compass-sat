@@ -52,7 +52,14 @@ export default function ProgressPage() {
 
       <div className="bg-card border border-border rounded-2xl p-5">
         <h2 className="font-serif text-lg mb-4">Last 28 days</h2>
-        <Heatmap />
+        {sessions.length < 3 ? (
+          <div className="text-center py-8">
+            <p className="font-serif text-xl">Day {Math.max(1, sessions.length)} — you started.</p>
+            <p className="text-sm text-muted-foreground mt-2">Keep going. Every session compounds.</p>
+          </div>
+        ) : (
+          <Heatmap />
+        )}
       </div>
 
       <div className="bg-card border border-border rounded-2xl p-5">

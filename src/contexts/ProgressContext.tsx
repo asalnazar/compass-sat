@@ -38,7 +38,7 @@ interface ProgressState {
 
 const ProgressContext = createContext<ProgressState | undefined>(undefined);
 
-const FREE_UNIT_LIMIT = 2;
+const FREE_UNIT_LIMIT = 4;
 
 function buildAllUnits() {
   const list: { id: string; title: string; section: "math" | "english"; icon: string }[] = [];
