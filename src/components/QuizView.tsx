@@ -225,7 +225,7 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
                 })}
               </div>
               {similarRevealed && similarSelected !== null && (
-                <TypingExplanation text={buildAIExplanation(sq, similarSelected)} />
+                <TypingExplanation data={buildAIExplanation(sq, similarSelected)} />
               )}
             </div>
           </motion.div>
@@ -279,7 +279,7 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
               })}
             </div>
             {revealed && selected !== null && (
-              <TypingExplanation text={buildAIExplanation(q, selected)} />
+              <TypingExplanation data={buildAIExplanation(q, selected)} />
             )}
           </div>
         </motion.div>
