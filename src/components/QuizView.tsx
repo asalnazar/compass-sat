@@ -33,35 +33,42 @@ function generateSimilarQuestions(original: Question): Question[] {
   return similar;
 }
 
-function buildAIExplanation(q: Question, picked: number): string {
-  const wrong = q.options[picked];
-  const right = q.options[q.correctIndex];
-  return `You picked "${wrong}". The concept you missed is in the setup of this problem — once you correctly model what's being asked, the answer is "${right}". Here's the breakdown: ${q.explanation} The mistake students usually make on questions like this is jumping to the arithmetic before fully translating the words. Slow that step down and the trap answers disappear.`;
+interface AIExplanation {
+  whyWrong: string;
+  steps: string[];
+  tip: string;
+  isCorrect: boolean;
 }
 
-function TypingExplanation({ text }: { text: string }) {
-  const [shown, setShown] = useState("");
-  const [thinking, setThinking] = useState(true);
-  const startedRef = useRef(false);
+function buildAIExplanation(q: Question, picked: number): AIExplanation {
+  const isCorrect = picked === q.correctIndex;
+  const wrong = q.options[picked];
+  const right = q.options[q.correctIndex];
+  const rawSteps = q.explanation
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  const steps = rawSteps.length > 1 ? rawSteps : [q.explanation];
+  return {
+    isCorrect,
+    whyWrong: isCorrect
+      ? `You chose "${right}" — that's correct. Here's exactly why, so you can repeat the logic next time.`
+      : `You picked "${wrong}". That option looks reasonable on the surface, but it skips a key step in the setup — it's a classic trap answer designed to catch students who rush. The correct answer is "${right}".`,
+    steps,
+    tip: `For problems like this: slow down on the translation step before touching the arithmetic. If you can restate the question in your own words first, the trap answers stop looking tempting.`,
+  };
+}
 
+function TypingExplanation({ data }: { data: AIExplanation }) {
+  const [thinking, setThinking] = useState(true);
   useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-    const timer = setTimeout(() => {
-      setThinking(false);
-      let i = 0;
-      const interval = setInterval(() => {
-        i += 3;
-        setShown(text.slice(0, i));
-        if (i >= text.length) clearInterval(interval);
-      }, 15);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [text]);
+    const t = setTimeout(() => setThinking(false), 900);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <div className="bg-accent/40 border border-border rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="bg-accent/40 border border-border rounded-xl p-4 space-y-3">
+      <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
         <span className="text-xs font-semibold text-primary uppercase tracking-wider">AI Explanation</span>
       </div>
@@ -73,7 +80,24 @@ function TypingExplanation({ text }: { text: string }) {
           <span className="ml-2">Analyzing your answer…</span>
         </div>
       ) : (
-        <p className={`text-sm text-foreground/85 leading-relaxed ${shown.length < text.length ? "typing-cursor" : ""}`}>{shown}</p>
+        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 text-sm text-foreground/85 leading-relaxed">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              {data.isCorrect ? "Why this is right" : "Why your answer is wrong"}
+            </p>
+            <p>{data.whyWrong}</p>
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Step-by-step</p>
+            <ol className="list-decimal list-inside space-y-1 marker:text-primary marker:font-semibold">
+              {data.steps.map((s, i) => (<li key={i}>{s}</li>))}
+            </ol>
+          </div>
+          <div className="border-t border-border pt-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1">Remember</p>
+            <p className="italic">{data.tip}</p>
+          </div>
+        </motion.div>
       )}
     </div>
   );
