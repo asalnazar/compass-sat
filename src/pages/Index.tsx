@@ -43,6 +43,11 @@ export default function Index() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <AICoach />
       </motion.div>
+
+      <p className="text-[11px] text-muted-foreground text-center pt-2">
+        🔒 Your practice history stays private — we never share or sell your data.
+      </p>
     </div>
   );
 }
+
