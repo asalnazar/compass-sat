@@ -1,18 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { practiceTests, FullTest, TestModule } from "@/data/practiceTests";
+import { mathUnits } from "@/data/mathQuestions";
+import { englishCategories } from "@/data/englishQuestions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy } from "lucide-react";
+import { Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy, Sparkles } from "lucide-react";
 import QuestionText from "@/components/QuestionText";
-import { useAuth } from "@/contexts/AuthContext";
-import PaywallBanner from "@/components/PaywallBanner";
+import ConfirmStart from "@/components/ConfirmStart";
+import { useProgress } from "@/contexts/ProgressContext";
 
 export default function FullTestPage() {
-  const { subscription } = useAuth();
-  const isPro = subscription.subscribed;
+  const { scores, allUnitIds } = useProgress();
+
   const [activeTest, setActiveTest] = useState<FullTest | null>(null);
   const [activeModule, setActiveModule] = useState<TestModule | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -21,6 +23,37 @@ export default function FullTestPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [moduleScores, setModuleScores] = useState<Record<string, number>>({});
+
+  // ── Build a personalized test from the user's weak areas ──
+  const personalizedTest = useMemo<FullTest | null>(() => {
+    const unitMap = new Map<string, { title: string; section: "math" | "english"; pool: typeof mathUnits[number]["questions"] }>();
+    mathUnits.forEach((u) => unitMap.set(u.id, { title: u.title, section: "math", pool: [...u.premiumQuestions, ...u.questions] }));
+    englishCategories.forEach((c) =>
+      c.units.forEach((u) => unitMap.set(u.id, { title: u.title, section: "english", pool: [...u.premiumQuestions, ...u.questions] }))
+    );
+    const ranked = scores
+      .filter((s) => s.completed && s.questionsAnswered > 0)
+      .map((s) => ({ ...s, acc: s.correctAnswers / s.questionsAnswered }))
+      .sort((a, b) => a.acc - b.acc);
+    if (ranked.length < 2) return null;
+    const pickFor = (section: "math" | "english") => {
+      const out: typeof mathUnits[number]["questions"] = [];
+      for (const r of ranked) {
+        const u = unitMap.get(r.unitId);
+        if (!u || u.section !== section) continue;
+        u.pool.slice(0, 3).forEach((q) => out.push(q));
+        if (out.length >= 10) break;
+      }
+      return out.slice(0, 10);
+    };
+    const mathQs = pickFor("math");
+    const englishQs = pickFor("english");
+    const modules: TestModule[] = [];
+    if (englishQs.length >= 5) modules.push({ id: "pers-rw", title: "Personalized · Reading & Writing", section: "reading-writing", difficulty: "medium", timeMinutes: 20, questions: englishQs });
+    if (mathQs.length >= 5) modules.push({ id: "pers-math", title: "Personalized · Math", section: "math", difficulty: "medium", timeMinutes: 25, questions: mathQs });
+    if (modules.length === 0) return null;
+    return { id: "personalized", title: "Personalized Practice Test", modules };
+  }, [scores]);
 
   const handleStartModule = (mod: TestModule) => {
     setActiveModule(mod);
@@ -177,38 +210,63 @@ export default function FullTestPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="font-serif text-3xl">Full Practice Tests</h1>
-        <p className="text-sm text-muted-foreground mt-1">5 complete SAT simulations · ~134 min each</p>
+        <p className="text-sm text-muted-foreground mt-1">5 complete SAT simulations · ~134 min each · all free</p>
       </div>
-      {!isPro && <PaywallBanner title="Full practice tests are part of Pro · $29/mo" />}
+
+      {personalizedTest && (
+        <ConfirmStart
+          title="Start your personalized practice test?"
+          description="Built from the topics you've struggled with most. ~45 minutes. Your progress is saved as you go."
+          confirmLabel="Start personalized test"
+          onConfirm={() => setActiveTest(personalizedTest)}
+          trigger={
+            <button className="w-full text-left rounded-2xl p-5 flex items-center gap-4 border-2 border-primary/60 bg-primary/5 hover:bg-primary/10 transition-all">
+              <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-serif text-base">Personalized Practice Test</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Built from your weak areas · {personalizedTest.modules.length} module{personalizedTest.modules.length > 1 ? "s" : ""}
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-primary" />
+            </button>
+          }
+        />
+      )}
+
+      {!personalizedTest && (
+        <p className="text-xs text-muted-foreground italic">
+          Tip: finish a few Math and English topics to unlock a personalized practice test built from your weak areas.
+        </p>
+      )}
+
       <div className="grid gap-3">
-        {practiceTests.map((test, i) => {
-          const locked = !isPro;
-          return (
-            <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <button
-                disabled={locked}
-                onClick={() => !locked && setActiveTest(test)}
-                className={`w-full text-left bg-card border border-border rounded-2xl p-5 flex items-center gap-4 transition-all ${
-                  locked ? "opacity-70 cursor-not-allowed" : "hover:border-primary/40 hover:shadow-sm cursor-pointer"
-                }`}
-              >
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="font-serif text-lg text-primary">{i + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium">{test.title}</h3>
-                  <p className="text-xs text-muted-foreground">4 modules · 98 questions · ~134 min</p>
-                </div>
-                {locked ? (
-                  <Badge variant="outline" className="text-xs">Locked</Badge>
-                ) : (
+        {practiceTests.map((test, i) => (
+          <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <ConfirmStart
+              title={`Start ${test.title}?`}
+              description="A full SAT simulation: ~134 minutes across 4 modules. You can stop after any module."
+              confirmLabel="Start test"
+              onConfirm={() => setActiveTest(test)}
+              trigger={
+                <button className="w-full text-left bg-card border border-border rounded-2xl p-5 flex items-center gap-4 transition-all hover:border-primary/40 hover:shadow-sm cursor-pointer">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <span className="font-serif text-lg text-primary">{i + 1}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium">{test.title}</h3>
+                    <p className="text-xs text-muted-foreground">4 modules · 98 questions · ~134 min</p>
+                  </div>
                   <Badge className="text-xs bg-success text-success-foreground">Open</Badge>
-                )}
-              </button>
-            </motion.div>
-          );
-        })}
+                </button>
+              }
+            />
+          </motion.div>
+        ))}
       </div>
     </div>
   );
 }
+

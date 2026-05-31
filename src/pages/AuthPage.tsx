@@ -115,7 +115,12 @@ export default function AuthPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
+            <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+              🔒 Your email and progress are private. We never sell or share your
+              personal info, and your data is encrypted in transit and at rest.
+            </p>
           </form>
+
 
           {!isSignUp && (
             <div className="text-center">

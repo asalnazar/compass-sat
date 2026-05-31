@@ -56,11 +56,11 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const { user, subscription } = useAuth();
 
   const allUnitIds = buildAllUnits();
-  const isPro = subscription.subscribed;
-  const unlockedUnitIds = isPro
-    ? allUnitIds.map((u) => u.id)
-    : allUnitIds.slice(0, FREE_UNIT_LIMIT).map((u) => u.id);
-  const isUnlocked = (unitId: string) => unlockedUnitIds.includes(unitId);
+  // Free mode: everything is unlocked for everyone.
+  const isPro = true;
+  const unlockedUnitIds = allUnitIds.map((u) => u.id);
+  const isUnlocked = (_unitId: string) => true;
+
 
   useEffect(() => {
     if (!user) {
