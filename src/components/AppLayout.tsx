@@ -10,8 +10,8 @@ const tabs = [
   { to: "/english", label: "English" },
   { to: "/full-tests", label: "Tests" },
   { to: "/progress", label: "Progress" },
-  { to: "/premium", label: "Upgrade" },
 ];
+
 
 function ScoreBadge() {
   const { user } = useAuth();
