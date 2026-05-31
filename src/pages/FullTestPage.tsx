@@ -24,6 +24,37 @@ export default function FullTestPage() {
   const [finished, setFinished] = useState(false);
   const [moduleScores, setModuleScores] = useState<Record<string, number>>({});
 
+  // ── Build a personalized test from the user's weak areas ──
+  const personalizedTest = useMemo<FullTest | null>(() => {
+    const unitMap = new Map<string, { title: string; section: "math" | "english"; pool: typeof mathUnits[number]["questions"] }>();
+    mathUnits.forEach((u) => unitMap.set(u.id, { title: u.title, section: "math", pool: [...u.premiumQuestions, ...u.questions] }));
+    englishCategories.forEach((c) =>
+      c.units.forEach((u) => unitMap.set(u.id, { title: u.title, section: "english", pool: [...u.premiumQuestions, ...u.questions] }))
+    );
+    const ranked = scores
+      .filter((s) => s.completed && s.questionsAnswered > 0)
+      .map((s) => ({ ...s, acc: s.correctAnswers / s.questionsAnswered }))
+      .sort((a, b) => a.acc - b.acc);
+    if (ranked.length < 2) return null;
+    const pickFor = (section: "math" | "english") => {
+      const out: typeof mathUnits[number]["questions"] = [];
+      for (const r of ranked) {
+        const u = unitMap.get(r.unitId);
+        if (!u || u.section !== section) continue;
+        u.pool.slice(0, 3).forEach((q) => out.push(q));
+        if (out.length >= 10) break;
+      }
+      return out.slice(0, 10);
+    };
+    const mathQs = pickFor("math");
+    const englishQs = pickFor("english");
+    const modules: TestModule[] = [];
+    if (englishQs.length >= 5) modules.push({ id: "pers-rw", title: "Personalized · Reading & Writing", section: "reading-writing", difficulty: "medium", timeMinutes: 20, questions: englishQs });
+    if (mathQs.length >= 5) modules.push({ id: "pers-math", title: "Personalized · Math", section: "math", difficulty: "medium", timeMinutes: 25, questions: mathQs });
+    if (modules.length === 0) return null;
+    return { id: "personalized", title: "Personalized Practice Test", modules };
+  }, [scores]);
+
   const handleStartModule = (mod: TestModule) => {
     setActiveModule(mod);
     setCurrentIdx(0);
