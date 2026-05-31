@@ -210,38 +210,63 @@ export default function FullTestPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="font-serif text-3xl">Full Practice Tests</h1>
-        <p className="text-sm text-muted-foreground mt-1">5 complete SAT simulations · ~134 min each</p>
+        <p className="text-sm text-muted-foreground mt-1">5 complete SAT simulations · ~134 min each · all free</p>
       </div>
-      {!isPro && <PaywallBanner title="Full practice tests are part of Pro · $29/mo" />}
+
+      {personalizedTest && (
+        <ConfirmStart
+          title="Start your personalized practice test?"
+          description="Built from the topics you've struggled with most. ~45 minutes. Your progress is saved as you go."
+          confirmLabel="Start personalized test"
+          onConfirm={() => setActiveTest(personalizedTest)}
+          trigger={
+            <button className="w-full text-left rounded-2xl p-5 flex items-center gap-4 border-2 border-primary/60 bg-primary/5 hover:bg-primary/10 transition-all">
+              <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-serif text-base">Personalized Practice Test</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Built from your weak areas · {personalizedTest.modules.length} module{personalizedTest.modules.length > 1 ? "s" : ""}
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-primary" />
+            </button>
+          }
+        />
+      )}
+
+      {!personalizedTest && (
+        <p className="text-xs text-muted-foreground italic">
+          Tip: finish a few Math and English topics to unlock a personalized practice test built from your weak areas.
+        </p>
+      )}
+
       <div className="grid gap-3">
-        {practiceTests.map((test, i) => {
-          const locked = !isPro;
-          return (
-            <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <button
-                disabled={locked}
-                onClick={() => !locked && setActiveTest(test)}
-                className={`w-full text-left bg-card border border-border rounded-2xl p-5 flex items-center gap-4 transition-all ${
-                  locked ? "opacity-70 cursor-not-allowed" : "hover:border-primary/40 hover:shadow-sm cursor-pointer"
-                }`}
-              >
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="font-serif text-lg text-primary">{i + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium">{test.title}</h3>
-                  <p className="text-xs text-muted-foreground">4 modules · 98 questions · ~134 min</p>
-                </div>
-                {locked ? (
-                  <Badge variant="outline" className="text-xs">Locked</Badge>
-                ) : (
+        {practiceTests.map((test, i) => (
+          <motion.div key={test.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <ConfirmStart
+              title={`Start ${test.title}?`}
+              description="A full SAT simulation: ~134 minutes across 4 modules. You can stop after any module."
+              confirmLabel="Start test"
+              onConfirm={() => setActiveTest(test)}
+              trigger={
+                <button className="w-full text-left bg-card border border-border rounded-2xl p-5 flex items-center gap-4 transition-all hover:border-primary/40 hover:shadow-sm cursor-pointer">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <span className="font-serif text-lg text-primary">{i + 1}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium">{test.title}</h3>
+                    <p className="text-xs text-muted-foreground">4 modules · 98 questions · ~134 min</p>
+                  </div>
                   <Badge className="text-xs bg-success text-success-foreground">Open</Badge>
-                )}
-              </button>
-            </motion.div>
-          );
-        })}
+                </button>
+              }
+            />
+          </motion.div>
+        ))}
       </div>
     </div>
   );
 }
+
