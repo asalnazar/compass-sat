@@ -1,18 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { practiceTests, FullTest, TestModule } from "@/data/practiceTests";
+import { mathUnits } from "@/data/mathQuestions";
+import { englishCategories } from "@/data/englishQuestions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy } from "lucide-react";
+import { Clock, BookOpen, Calculator, ArrowRight, CheckCircle, XCircle, Trophy, Sparkles } from "lucide-react";
 import QuestionText from "@/components/QuestionText";
-import { useAuth } from "@/contexts/AuthContext";
-import PaywallBanner from "@/components/PaywallBanner";
+import ConfirmStart from "@/components/ConfirmStart";
+import { useProgress } from "@/contexts/ProgressContext";
 
 export default function FullTestPage() {
-  const { subscription } = useAuth();
-  const isPro = subscription.subscribed;
+  const { scores, allUnitIds } = useProgress();
+
   const [activeTest, setActiveTest] = useState<FullTest | null>(null);
   const [activeModule, setActiveModule] = useState<TestModule | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
