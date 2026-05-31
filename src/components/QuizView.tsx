@@ -103,13 +103,30 @@ function TypingExplanation({ data }: { data: AIExplanation }) {
   );
 }
 
+const STORAGE_PREFIX = "nextstep:quiz:";
+
 export default function QuizView({ unitId, unitTitle, questions, section, tip, onBack }: Props) {
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const { saveScore, predictedScore } = useProgress();
+  const storageKey = `${STORAGE_PREFIX}${unitId}`;
+
+  // Hydrate from localStorage so users resume where they left off.
+  const initial = (() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.currentIdx === "number" && parsed.currentIdx < questions.length) {
+        return parsed as { currentIdx: number; correctCount: number };
+      }
+    } catch {}
+    return null;
+  })();
+
+  const [currentIdx, setCurrentIdx] = useState(initial?.currentIdx ?? 0);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(initial?.correctCount ?? 0);
   const [finished, setFinished] = useState(false);
-  const { saveScore } = useProgress();
 
   const [showingSimilar, setShowingSimilar] = useState(false);
   const [similarQuestions, setSimilarQuestions] = useState<Question[]>([]);
@@ -117,6 +134,18 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
   const [similarSelected, setSimilarSelected] = useState<number | null>(null);
   const [similarRevealed, setSimilarRevealed] = useState(false);
   const [wrongOnCurrent, setWrongOnCurrent] = useState(false);
+
+  // Persist after every answered question.
+  useEffect(() => {
+    if (finished) {
+      localStorage.removeItem(storageKey);
+      return;
+    }
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ currentIdx, correctCount }));
+    } catch {}
+  }, [currentIdx, correctCount, finished, storageKey]);
+
 
   const q = questions[currentIdx];
   const progress = ((currentIdx + (finished ? 1 : 0)) / questions.length) * 100;
@@ -176,6 +205,14 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
             <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
           </div>
         </div>
+        <div className="bg-accent/40 border border-border rounded-2xl p-5 space-y-2">
+          <h3 className="font-serif text-base">How this changes your score</h3>
+          <p className="text-sm text-muted-foreground">
+            Your predicted SAT is now <span className="font-semibold text-foreground">{predictedScore}</span>.
+            We use the formula <span className="font-mono text-foreground">800 + (avg accuracy × 600)</span> across
+            all topics you've completed — so every session you finish moves it.
+          </p>
+        </div>
         <div className="bg-accent/40 border border-border rounded-2xl p-5">
           <h3 className="font-serif text-base mb-1">SAT Tip</h3>
           <p className="text-sm text-muted-foreground">{tip}</p>
@@ -184,6 +221,7 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
       </motion.div>
     );
   }
+
 
   if (showingSimilar) {
     const sq = similarQuestions[similarIdx];
