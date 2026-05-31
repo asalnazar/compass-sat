@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Question } from "@/data/mathQuestions";
 import { useProgress } from "@/contexts/ProgressContext";
 import { motion, AnimatePresence } from "framer-motion";
