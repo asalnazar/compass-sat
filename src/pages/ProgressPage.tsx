@@ -70,17 +70,8 @@ export default function ProgressPage() {
         </svg>
       </div>
 
-      {!isPro ? (
-        <>
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <h2 className="font-serif text-lg">Topic breakdown</h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              Detailed accuracy per topic, weak-area drilldown, and section-level analytics are part of Pro.
-            </p>
-          </div>
-          <PaywallBanner title="Unlock detailed progress · $29/mo" cta="Upgrade" />
-        </>
-      ) : (
+      {(
+
         <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
           <h2 className="font-serif text-lg">Topic breakdown</h2>
           {scores.length === 0 ? (
