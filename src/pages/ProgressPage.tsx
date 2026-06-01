@@ -1,14 +1,9 @@
 import { useProgress } from "@/contexts/ProgressContext";
 import Heatmap from "@/components/Heatmap";
-import PaywallBanner from "@/components/PaywallBanner";
-import { Flame, Copy, Check } from "lucide-react";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { Flame } from "lucide-react";
 
 export default function ProgressPage() {
-  const { scores, currentStreak, predictedScore, sessions, isPro } = useProgress();
-  const { toast } = useToast();
-  const [copied, setCopied] = useState(false);
+  const { scores, currentStreak, predictedScore, sessions } = useProgress();
 
   // Build score-over-time line: cumulative average accuracy → predicted score
   const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date));
@@ -28,13 +23,6 @@ export default function ProgressPage() {
   const yScale = (s: number) => H - P - ((s - minS) / Math.max(1, maxS - minS)) * (H - P * 2);
   const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${P + i * xStep} ${yScale(p.score)}`).join(" ");
 
-  const referralLink = typeof window !== "undefined" ? `${window.location.origin}/?ref=you` : "";
-  const copy = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    toast({ title: "Link copied" });
-    setTimeout(() => setCopied(false), 1500);
-  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -82,17 +70,8 @@ export default function ProgressPage() {
         </svg>
       </div>
 
-      {!isPro ? (
-        <>
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <h2 className="font-serif text-lg">Topic breakdown</h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              Detailed accuracy per topic, weak-area drilldown, and section-level analytics are part of Pro.
-            </p>
-          </div>
-          <PaywallBanner title="Unlock detailed progress · $29/mo" cta="Upgrade" />
-        </>
-      ) : (
+      {(
+
         <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
           <h2 className="font-serif text-lg">Topic breakdown</h2>
           {scores.length === 0 ? (
@@ -114,17 +93,6 @@ export default function ProgressPage() {
         </div>
       )}
 
-      <div className="bg-accent/40 border border-border rounded-2xl p-5">
-        <h2 className="font-serif text-lg">Get 1 month free</h2>
-        <p className="text-sm text-muted-foreground mt-1 mb-4">Share with a friend. When they start a free trial, you both get a month on us.</p>
-        <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2">
-          <input value={referralLink} readOnly className="flex-1 bg-transparent text-sm outline-none truncate" />
-          <button onClick={copy} className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-3 py-1.5 rounded-lg">
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? "Copied" : "Copy"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
