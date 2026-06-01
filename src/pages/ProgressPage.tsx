@@ -1,14 +1,9 @@
 import { useProgress } from "@/contexts/ProgressContext";
 import Heatmap from "@/components/Heatmap";
-import PaywallBanner from "@/components/PaywallBanner";
-import { Flame, Copy, Check } from "lucide-react";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { Flame } from "lucide-react";
 
 export default function ProgressPage() {
-  const { scores, currentStreak, predictedScore, sessions, isPro } = useProgress();
-  const { toast } = useToast();
-  const [copied, setCopied] = useState(false);
+  const { scores, currentStreak, predictedScore, sessions } = useProgress();
 
   // Build score-over-time line: cumulative average accuracy → predicted score
   const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date));
@@ -28,13 +23,6 @@ export default function ProgressPage() {
   const yScale = (s: number) => H - P - ((s - minS) / Math.max(1, maxS - minS)) * (H - P * 2);
   const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${P + i * xStep} ${yScale(p.score)}`).join(" ");
 
-  const referralLink = typeof window !== "undefined" ? `${window.location.origin}/?ref=you` : "";
-  const copy = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    toast({ title: "Link copied" });
-    setTimeout(() => setCopied(false), 1500);
-  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

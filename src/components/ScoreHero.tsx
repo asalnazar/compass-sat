@@ -20,7 +20,7 @@ export default function ScoreHero() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              Your predicted SAT
+              Your projected SAT
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -29,11 +29,12 @@ export default function ScoreHero() {
                 </button>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-medium mb-1">How we predict your score</p>
+                <p className="font-medium mb-1">Early projection</p>
                 <p className="text-xs">
-                  Predicted SAT = 800 + (your average accuracy across completed
-                  topics × 600). Right now: {completed} topics completed,
-                  {" "}{overallPercentage}% accuracy.
+                  This is an early estimate based on the {completed} topic{completed === 1 ? "" : "s"} you've
+                  completed so far. You don't need to finish every topic to see a
+                  projection — it just gets more accurate the more you practice,
+                  and updates after every session.
                 </p>
               </TooltipContent>
             </Tooltip>
