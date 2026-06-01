@@ -114,17 +114,6 @@ export default function ProgressPage() {
         </div>
       )}
 
-      <div className="bg-accent/40 border border-border rounded-2xl p-5">
-        <h2 className="font-serif text-lg">Get 1 month free</h2>
-        <p className="text-sm text-muted-foreground mt-1 mb-4">Share with a friend. When they start a free trial, you both get a month on us.</p>
-        <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2">
-          <input value={referralLink} readOnly className="flex-1 bg-transparent text-sm outline-none truncate" />
-          <button onClick={copy} className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-3 py-1.5 rounded-lg">
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? "Copied" : "Copy"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
