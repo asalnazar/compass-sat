@@ -320,6 +320,9 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
                 );
               })}
             </div>
+            {selected !== null && !revealed && (
+              <Button onClick={handleConfirm} className="w-full">Confirm Answer</Button>
+            )}
             {revealed && selected !== null && (
               <TypingExplanation data={buildAIExplanation(q, selected)} />
             )}
