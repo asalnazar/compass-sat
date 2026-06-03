@@ -153,8 +153,12 @@ export default function QuizView({ unitId, unitTitle, questions, section, tip, o
   const handleSelect = (idx: number) => {
     if (revealed) return;
     setSelected(idx);
+  };
+
+  const handleConfirm = () => {
+    if (revealed || selected === null) return;
     setRevealed(true);
-    if (idx === q.correctIndex) {
+    if (selected === q.correctIndex) {
       setCorrectCount((c) => c + 1);
       setWrongOnCurrent(false);
     } else setWrongOnCurrent(true);
